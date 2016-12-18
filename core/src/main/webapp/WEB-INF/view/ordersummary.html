@@ -1,0 +1,76 @@
+<#include "include/header.html"/>
+<script
+        src="${base.contextPath}/common/code?orderStatus=HAP_OM_ORDER_STATUS"></script>
+<body>
+<script>
+    var viewModel = kendo.observable({
+        model: {status: ''},
+        createFunction: function () {
+            $('#grid').data('kendoGrid').addRow();
+        },
+        saveFunction: function () {
+            $('#grid').data('kendoGrid').saveChanges();
+        },
+        queryFunction: function (e) {
+            $('#grid').data('kendoGrid').dataSource.page(1);
+        }
+    });
+</script>
+
+<div id="content-container">
+    <div id="page-content">
+        <div class="pull-left" id="toolbar-btn" style="padding-bottom:10px;">
+            <span class="btn btn-primary k-grid-add" style="float:left;margin-right:5px;"
+                  data-bind="click:createFunction">新建</span>
+            <span class="btn btn-success k-grid-save-changes" style="float:left;margin-right:5px;"
+                  data-bind="click:saveFunction">保存</span>
+        </div>
+        <div style="clear:both">
+            <div id="grid" style="clear: both"></div>
+        </div>
+        <script>kendo.bind($('#toolbar-btn'), viewModel);</script>
+    </div>
+</div>
+
+
+<script>
+    window.grid =  $("#grid").kendoGrid({
+        dataSource: {
+            data: [
+                {id: 1, name: "Jane Doe", age: 30},
+                {id: 2, name: "John Doe", age: 33},
+            ],
+            schema: {
+                model: {},
+                userName:"name",
+                email:"age"
+            }
+        },
+        navigatable: false,
+        height: '100%',
+        resizable: true,
+        scrollable: true,
+        editable: true,
+        sortable: true,
+        pageable: {
+            pageSizes: [5, 10, 20, 50],
+            refresh: true,
+            buttonCount: 5
+        },
+        columns: [
+            {
+                field: "userName",
+                title: '用户名',
+                width: 80
+            },
+            {
+                field: "email",
+                title: '邮件',
+                width: 150
+            }]
+    })
+
+</script>
+
+</body>
+</html>

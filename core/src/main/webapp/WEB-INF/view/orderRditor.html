@@ -1,0 +1,328 @@
+<#include "include/header.html" />
+<script
+        src="${base.contextPath}/common/code?orderStatus=HAP_OM_ORDER_STATUS"></script>
+<body>
+
+<script>
+    viewModel = kendo.observable({
+        model: {},
+        createFunction: function () {
+            $('#grid').data('kendoGrid').addRow();
+        },
+        saveFunction: function () {
+            $('#grid').data('kendoGrid').saveChanges();
+        },
+        cancelFunction: function (e) {
+            $('#grid').data('kendoGrid').cancelChanges();
+        },
+        queryResource: function (e) {
+            $('#grid').data('kendoGrid').dataSource.page(1);
+        }
+    });
+
+</script>
+
+<div class="contrainer">
+    <div id="query-form1" style="padding-bottom:10px;">
+        <div class="row">
+            <div class="col-lg-2"></div>
+            <div class="col-lg-3">销售订单号: <input id="dynamicLOV3"  data-bind="value:model.orderNum"/></div>
+            <div class="col-lg-3">公司名称:<input id="dynamicLOV" data-bind="value:model.companyName"/></div>
+            <script>kendo.bind($('#dynamicLOV'), viewModel);</script>
+            <script>
+
+                console.log("url=" + window.location.href);
+                var urll = window.location.href;
+                var orderNum = urll.substring(urll.length - 4, urll.length);
+                console.log("orderNum=" + orderNum);
+
+
+
+                $("#dynamicLOV").kendoLov({
+                    code: "mycompanyall",
+                    contextPath: '${base.contextPath}',
+                    locale: '${base.locale}'
+                });
+              var headerData=null;
+
+                $(function () {
+                    if (orderNum != null && typeof orderNum != "undefined") {
+                        $.ajax({
+                            url: "queryHeader/all",
+                            type: "POST",
+                            data: {
+                                "orderNumber": orderNum
+                            },
+                            dataType: "json",
+                            success: function (header) {
+                                /*console.log("header" + header.rows[0].companyName);*/
+                                $("#dynamicLOV3")[0].value=header.rows[0].orderNumber;
+                                console.log("ooo="+header.rows[0].orderLines[0].itemCode);
+                                headerData=header.rows[0];
+
+                                viewModel.model=headerData;
+
+
+                                $("#orderMoney")[0].value=sum;
+                            }
+
+
+                        });
+                    }
+                });
+
+
+            </script>
+
+            <div class="col-lg-3">客户名称:<input id="dynamicLOV1" data-bind="value:model.customerId"/></div>
+            <script>
+                $("#dynamicLOV1").kendoLov($.extend(${lovProvider.getLov(base.contextPath, base.locale, "constomer")}, {
+                    query: function (e) {
+                        e.param['companyId'] = viewModel.model.companyId;
+                    }
+                }))
+            </script>
+
+            <div class="col-lg-1"></div>
+        </div>
+        <div class="row" style="margin-top: 10px">
+            <div class="col-lg-2"></div>
+            <div class="col-lg-3">
+                订单日期:<input style="" data-role="datetimepicker" data-bind="value:model.startDate"
+                            class="k-datetimepicker">
+            </div>
+            <div class="col-lg-3" style="">订单金额: <input id="orderMoney"
+                                                        data-bind="value:model.inventoryItemId"/></div>
+            <div class="col-lg-3" style="">订单状态:<input id="categories"
+                                                       data-bind="value:model.orderStatus"></div>
+            <div class="col-lg-1"></div>
+            <script type="text/javascript">
+                $("#categories").kendoDropDownList({
+                    dataTextField: "meaning",
+                    dataValueField: "value",
+                    dataSource: orderStatus
+                });
+            </script>
+
+
+        </div>
+        <div class="row" style="margin-top: 5px">
+            <div class="col-lg-1"></div>
+            <div class="col-lg-11">
+                <span class="btn btn-primary" style="width:70px;"
+                      data-bind="click:queryGrid" type="submit">保存</span>
+
+                <span class="btn btn-danger" style="width:70px;margin-left: 3px" data-bind="click:resetForm"
+                      type="submit">提交</span>
+                <span class="btn btn-danger" style="width:70px;margin-left: 3px" data-bind="click:resetForm"
+                      type="">审批</span>
+                <span class="btn btn-danger" style="width:70px;margin-left: 3px" data-bind="click:resetForm"
+                      type="">拒绝</span>
+                <span class="btn btn-danger" style="width:70px;margin-left: 3px" data-bind="click:resetForm"
+                      type="">整单删除</span>
+                <span class="btn btn-danger" style="width:70px;margin-left: 3px" data-bind="click:resetForm"
+                      type="">单据打印</span>
+                <span class="btn btn-danger" style="width:70px;margin-left: 3px" data-bind="click:resetForm"
+                      type="">返回</span>
+
+            </div>
+        </div>
+
+    </div>
+
+    <script>kendo.bind($('#query-form1'), viewModel);</script>
+    <div class="row well">
+        <div class="" style="">
+            <div id="tabstrip" style="height:500px;">
+                <ul>
+                    <li class="k-state-active">
+                        <strong>订单明细</strong>
+                    </li>
+                    <li>
+                        <strong>附加信息</strong>
+                    </li>
+
+                </ul>
+                <div>
+                    <div id="grid" style="">
+                        <div class="pull-left" id="toolbar-btn" style="padding-bottom:10px;">
+                        <span class="btn btn-primary k-grid-add" style="float:left;margin-right:5px;"
+                              data-bind="click:createFunction">新建</span>
+                        <span class="btn btn-success k-grid-save-changes" style="float:left;margin-right:5px;"
+                              data-bind="click:saveFunction">保存</span>
+                            <span onclick="deleteData()" class="btn btn-danger" style="float:left;">删除</span>
+                        </div>
+                        <script>kendo.bind($('#toolbar-btn'), viewModel);</script>
+                    </div>
+
+                </div>
+                <script>
+                    var dataSource = new kendo.data.DataSource({
+                                transport: {
+                                    read: {
+                                        /* url: "",
+                                         dataType: "json",
+                                         type: "POST"*/
+
+
+                                    },
+                                    create: {
+                                        url: "/insertOrder",
+                                        contentType: "application/json",
+                                        type: "POST"
+                                    },
+                                    parameterMap: function (options, type) {
+                                        console.dir(viewModel);
+                                        if (type !== "read" && options.models) {
+                                            var datas = Hap.prepareSubmitParameter(options, type)
+                                            return kendo.stringify(datas);
+                                        } else if (type === "read") {
+
+                                            return Hap.prepareQueryParameter(viewModel.model
+                                                    .toJSON(), options);
+
+                                        }
+                                    }
+
+                                },
+                                batch: true,
+                                serverPaging: true,//分页显示
+                                pageSize: 5,
+                                schema: {
+                                    data: 'rows',
+                                    total: 'total',
+
+                                    model: {
+                                        fields: {
+                                            lineNumber: "lineNumber",
+                                            itemCode: "itemCode",
+                                            orderdQuantity: "orderdQuantity",
+                                            unitSellingPrice: "unitSellingPrice",
+                                            orderMoney: "orderMoney"
+                                        }
+                                    }
+                                }
+                            })
+                            ;
+
+                    $("#grid").kendoGrid({
+                        dataSource: dataSource,
+                        height: '200px',
+                        width: '100%',
+                        batch: true,
+                        editable: 'inline',
+                        pageable: {
+                            pageSizes: [5, 10, 20, 50],
+                            buttonCount: 5,
+                            refresh: true
+                        },
+                        scrollable: false,
+                        columns: [ {
+                            field: "lineNumber",
+                            title: "行号"
+                        }, {
+                            field: "itemCode",
+                            title: "物料编号"
+                        }, {
+                            field: "orderdQuantity",
+                            title: "物料描述"
+                        }, {
+                            field: "unitSellingPrice",
+                            title: "产品单位"
+                        }, {
+                            field: "orderMoney",
+                            title: "数量"
+                        }, {
+                            field: "orderMoney",
+                            title: "销售单价"
+                        }, {
+                            field: "orderMoney",
+                            title: "金额"
+                        }, {
+                            field: "orderMoney",
+                            title: "备注"
+                        }]
+                    }).data("kendoGrid").refresh();
+
+
+                    /*给当前的物料绑定lov*/
+                    $(".Orderlov").kendoLov({
+                        code: "Inventory",
+                        contextPath: '${base.contextPath}',
+                        locale: '${base.locale}'
+                    });
+                </script>
+
+
+                 <div>
+                     <div id="grid1"></div>
+                     <script>
+                         $("#grid1").kendoGrid({
+                             dataSource: dataSource,
+                             height: '100%',
+                             width: '100%',
+                             batch: true,
+                             scrollable: 'multiple, rowbox',
+                             pageable: {
+                                 pageSizes: [5, 10, 20, 50],
+                                 buttonCount: 5,
+                                 refresh: true
+                             },
+                             scrollable: false,
+                             columns: [{
+                                 field: "orderNum",
+                                 title: "行号"
+
+                             }, {
+                                 field: "companyName",
+                                 title: "附件信息1"
+                             }, {
+                                 field: "customerName",
+                                 title: "附件信息2"
+                             }, {
+                                 field: "rderDate",
+                                 title: "附件信息3"
+                             }, {
+                                 field: "orderStuts",
+                                 title: "附件信息4"
+                             }, {
+                                 field: "orderMoney",
+                                 title: "附件信息5"
+                             }]
+                         });
+
+                     </script>
+
+                 </div>
+            </div>
+        </div>
+
+
+        <script>
+            var tabstrip = $("#tabstrip").kendoTabStrip({
+                height: '100%',
+                width: '98%',
+                animation: false
+            }).data("kendoTabStrip");
+            tabstrip.tabGroup.on("click", ".k-i-close", function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                var item = $(e.target).closest(".k-item");
+                var index = item.index(),
+                        prev = item.next().length == 1 ? item.next() : item.prev();
+                tabstrip.remove(item.index());
+                tabstrip.select(prev)
+            });
+        </script>
+
+
+    </div>
+</div>
+
+
+</div>
+</form>
+</div>
+
+</body>
+</html>

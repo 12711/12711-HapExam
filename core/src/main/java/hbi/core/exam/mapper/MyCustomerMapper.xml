@@ -1,0 +1,16 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="hbi.core.exam.mapper.MyCustomerMapper">
+
+       <resultMap id="customerMap" type="hbi.core.exam.dto.MyCustomer" >
+              <id column="CUSTOMER_ID" property="customerId"></id>
+              <result column="CUSTOMER_NUMBER" property="customerNum"></result>
+              <result column="CUSTOMER_NAME" property="customerName"></result>
+              <result column="COMPANY_ID" property="companyId"></result>
+       </resultMap>
+       <select id="queryAllCus"   resultMap="customerMap"  >
+              select * from hap_ar_customers where 1=1
+              <if test="companyId!=null and companyId!=0">and COMPANY_ID=#{companyId}</if>
+              <if test="customerNum!=null and customerNum!=''">and CUSTOMER_NUMBER like concat(concat('%',#{customerNum}),'%')</if>
+              <if test="customerName!=null and customerName!=''">and CUSTOMER_NAME like concat(concat('%',#{customerName}),'%')</if>
+        </select>
+</mapper>

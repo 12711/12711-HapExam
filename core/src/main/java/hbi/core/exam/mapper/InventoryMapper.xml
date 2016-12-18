@@ -1,0 +1,19 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="hbi.core.exam.mapper.InventoryMapper">
+
+       <resultMap id="inventoryMap" type="hbi.core.exam.dto.Inventory" >
+              <id column="INVENTORY_ITEM_ID" property="inventoryItemId"></id>
+              <result column="ITEM_CODE" property="itemCode"></result>
+              <result column="ITEM_UOM" property="itemUom"></result>
+              <result column="ITEM_DESCRIPTION" property="itemDescription"></result>
+
+              <result column="ORDER_FLAG" property="orderFlag"></result>
+              <result column="END_ACTIVE_DATE" property="endActiveDate"></result>
+              <result column="ENABLED_FLAG" property="enabledFlag"></result>
+       </resultMap>
+       <select id="queryAllInv"  resultMap="inventoryMap" >
+              select * from hap_inv_inventory_items where 1=1
+              <if test="itemCode!=null and itemCode!=''">and ITEM_CODE=#{itemCode}</if>
+              <if test="itemDescription!=null and itemDescription!=''">and ITEM_DESCRIPTION=#{itemDescription}</if>
+       </select>
+</mapper>

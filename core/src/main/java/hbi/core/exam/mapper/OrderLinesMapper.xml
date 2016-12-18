@@ -1,0 +1,46 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="hbi.core.exam.mapper.OrderLineMapper">
+    <resultMap id="OrderLineMap" type="hbi.core.exam.dto.OrderLines">
+        <result column="ORDER_NUMBER" property="orderNum"></result>
+        <result column="CUSTOMER_NAME" property="customerName"></result>
+        <result column="COMPANY_NAME" property="companyName"></result>
+        <result column="ORDER_DATE" property="rderDate"></result>
+        <result column="ORDER_STATUS" property="orderStatus"></result>
+        <result column="sumMoney" property="orderMoney"></result>
+    </resultMap>
+
+    <select id="queryAllLines" resultMap="OrderLineMap" parameterType="hbi.core.exam.dto.OrderLines">
+        select distinct
+        ORDER_NUMBER,COMPANY_NAME,CUSTOMER_NAME,ORDER_DATE,ORDER_STATUS,ORDERD_QUANTITY*UNIT_SELLING_PRICE sumMoney
+        from hap_om_order_lines hool,hap_org_companys hoc,hap_ar_customers hac,hap_om_order_headers hooh,hap_inv_inventory_items hii
+        where hool.HEADER_ID=hooh.HEADER_ID and hool.COMPANY_ID=hoc.COMPANY_ID and hooh.CUSTOMER_ID=hac.CUSTOMER_ID and hii.INVENTORY_ITEM_ID=hool.INVENTORY_ITEM_ID
+        <if test="orderNum!=null">and hooh.ORDER_NUMBER=#{orderNum}</if>
+        <if test="companyId!=null">and hoc.COMPANY_ID=#{companyId}</if>
+        <if test="customerId!=null">and hac.CUSTOMER_ID=#{customerId}</if>
+        <if test="inventoryItemId!=null">and hii.INVENTORY_ITEM_ID=#{inventoryItemId}</if>
+        <if test="orderStatus!=null and orderStatus!=''">and hooh.ORDER_STATUS=#{orderStatus}</if>
+
+    </select>
+       <resultMap id="forHead" type="hbi.core.exam.dto.OrderLines">
+         <result column="LINE_NUMBER" property="lineNumber"></result>
+         <result column="ITEM_CODE" property="itemCode"></result>
+           <result column="ORDER_QUANTITY_UOM" property="orderQuantityUom"></result>
+         <result column="ORDERD_QUANTITY" property="orderdQuantity"></result>
+         <result column="UNIT_SELLING_PRICE" property="unitSellingPrice"></result>
+         <result column="summ"   property="orderMoney"></result>
+       </resultMap>
+
+    <select id="queryByOrderHeader"  parameterType="Integer" resultMap="forHead">
+      select DISTINCT  LINE_NUMBER,ITEM_CODE,ITEM_DESCRIPTION,ORDERD_QUANTITY,UNIT_SELLING_PRICE,
+       ORDERD_QUANTITY*UNIT_SELLING_PRICE summ
+      from  hap_om_order_lines hool,hap_inv_inventory_items hiii
+      where hool.INVENTORY_ITEM_ID=hiii.INVENTORY_ITEM_ID
+      and HEADER_ID=#{headerId}
+    </select>
+
+    <insert id="insertlines" parameterType="hbi.core.exam.dto.OrderLines" useGeneratedKeys="true" keyProperty="lineId">
+             insert into hap_om_order_lines(INVENTORY_ITEM_ID,ORDER_QUANTITY_UOM,ORDERD_QUANTITY,
+             UNIT_SELLING_PRICE)values(inventoryItemId,orderdQuantity,orderQuantityUom,unitSellingPrice)
+    </insert>
+
+</mapper>

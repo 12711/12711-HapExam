@@ -1,0 +1,41 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="hbi.core.exam.mapper.OrderHeaderMapper">
+    <resultMap id="headerMap" type="hbi.core.exam.dto.OrderHeaders">
+        <result column="ORDER_NUMBER" property="orderNumber"></result>
+        <result column="COMPANY_NAME" property="companyName"></result>
+        <result column="CUSTOMER_NAME" property="customerName"></result>
+        <result column="ORDER_DATE" property="orderDate"></result>
+
+        <collection property="orderLines" column="headId"
+                    ofType="hbi.core.exam.dto.OrderLines"
+                    select="hbi.core.exam.mapper.OrderLineMapper.queryByOrderHeader">
+        </collection>
+    </resultMap>
+
+    <!--通过订单编号查询订单头-->
+    <select id="queryByOrderNum" parameterType="hbi.core.exam.dto.OrderHeaders" resultMap="headerMap">
+        select DISTINCT  hooh.HEADER_ID headId,ORDER_NUMBER,COMPANY_NAME,CUSTOMER_NAME,ORDER_DATE,
+        ORDER_STATUS from hap_om_order_headers hooh,hap_om_order_lines hool,hap_ar_customers hac,hap_org_companys hoc
+        where  hooh.COMPANY_ID=hoc.COMPANY_ID and hooh.CUSTOMER_ID=hac.CUSTOMER_ID and hooh.ORDER_NUMBER=#{orderNumber}
+    </select>
+
+    <insert id="insertOrderHeader" parameterType="hbi.core.exam.dto.OrderHeaders" useGeneratedKeys="true" keyProperty="headerId">
+        insert into hap_om_order_headers(
+        <trim suffixOverrides=",">
+            <if test="orderNumber!=null">ORDER_NUMBER,</if>
+            <if test="companyId!=null">COMPANY_ID,</if>
+            <if test="customerId!=null">CUSTOMER_ID,</if>
+            <if test="orderDate!=null">ORDER_DATE,</if>
+            <if test="orderStatus!=null">ORDER_STATUS</if>
+        </trim>
+        )
+        values(
+        <if test="orderNumber!=null">ORDER_NUMBER=#{orderNumber},</if>
+        <if test="companyId!=null">COMPANY_ID=#{companyId},</if>
+        <if test="customerId!=null">CUSTOMER_ID=#{customerId},</if>
+        <if test="orderDate!=null">ORDER_DATE=#{orderDate},</if>
+        <if test="orderStatus!=null">ORDER_STATUS=#{orderStatus}</if>
+        )
+    </insert>
+
+</mapper>
